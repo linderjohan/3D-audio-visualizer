@@ -401,10 +401,10 @@ h1, h2, h3, h4 {
 }
 
 .wrapper {
-	width:100%;
-	max-width:1200px;
-	margin:auto;
-	// border:2px dotted red;
+	overflow: hidden;
+	width: 100%;
+	height: 100vh;
+	margin: auto;
 }
 
 .background {

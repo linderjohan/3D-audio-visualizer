@@ -3,7 +3,7 @@ import { BrowserRouter, Route, Switch, Redirect, NavLink as Link } from 'react-r
 
 import settings from "./settings.json";
 
-import Frame from "./components/Frame";
+import ThreeScene from "./components/ThreeScene";
 import Error from "./components/Error";
 
 class App extends Component {
@@ -32,7 +32,6 @@ class Index extends Component {
 
 		this.update = this.update.bind(this);
 		this.imageload = this.imageload.bind(this);
-		this.update();
 	}
 
 	update() {
@@ -56,7 +55,7 @@ class Index extends Component {
 		return(
 			<div>
 				<main className="wrapper">
-					<Frame/>
+					<ThreeScene/>
 				</main>
 			</div>
 		);
