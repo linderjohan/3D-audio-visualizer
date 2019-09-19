@@ -2,6 +2,12 @@ import React, { Component } from 'react';
 // import ReactDOM from 'react-dom'
 // import { Canvas } from 'react-three-fiber'
 import * as THREE from 'three';
+import Stats from 'stats.js'
+
+var stats = new Stats();
+stats.showPanel( 2 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+document.body.appendChild( stats.dom );
 
 class ThreeScene extends Component{
   constructor() {
@@ -11,7 +17,8 @@ class ThreeScene extends Component{
       width: window.innerWidth,
       height: window.innerHeight,
       framecounter: 0,
-      framecounter2: 0
+      framecounter2: 0,
+      n: 128
     }
 
     this.start = this.start.bind(this);
@@ -21,6 +28,31 @@ class ThreeScene extends Component{
     this.resize = this.resize.bind(this);
     this.incrementColor = this.incrementColor.bind(this);
     this.randColor = this.randColor.bind(this);
+    this.createRow = this.createRow.bind(this);
+  }
+
+  createRow() {
+    let k = Math.floor((Math.random() * 50) + 1);
+    const color = new THREE.Color( Math.random(), Math.random(), Math.random() );
+    let geometry = new THREE.BoxGeometry( 1, k, 1 );
+    let material = new THREE.MeshBasicMaterial({ color });
+    let object = new THREE.Mesh(geometry, material);
+    object.position.x = -(this.state.n/2) + 0.5;
+    object.position.y = k/2;
+    this.rowgroup.attach( object );
+
+    for(let i = 1; i < this.state.n; ++i) {
+      k = Math.floor((Math.random() * 50) + 1);
+      geometry = new THREE.BoxGeometry( 1, k, 1);
+      material = new THREE.MeshBasicMaterial({ color });
+      object = new THREE.Mesh(geometry, material);
+      object.position.x = ( i - (this.state.n/2) ) + 0.5;
+      object.position.y = ( k / 2 );
+      this.rowgroup.attach( object );
+    }
+
+    this.scene.add(this.rowgroup);
+    this.allrows.unshift(this.rowgroup);
   }
 
   randColor(color) {
@@ -60,17 +92,19 @@ class ThreeScene extends Component{
   componentDidMount() {
     window.addEventListener('resize', this.resize);
 
+    this.allrows = [];
+
     //ADD SCENE
     this.scene = new THREE.Scene();
 
     //ADD CAMERA
     this.camera = new THREE.PerspectiveCamera(
-      75, this.state.width / this.state.height, 0.1, 500
+      60, this.state.width / this.state.height, 0.1, 2000
     );
 
-    this.camera.position.z = 17;
-    this.camera.position.y = 4;
-    this.camera.rotation.x = 0.4;
+    this.camera.position.z = this.state.n/2;
+    this.camera.position.y = (3*this.state.n)/4;
+    this.camera.rotation.x = -(Math.PI * 0.15);
 
     //ADD RENDERER
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -78,21 +112,20 @@ class ThreeScene extends Component{
     this.renderer.setSize(this.state.width, this.state.height);
     this.mount.appendChild(this.renderer.domElement);
 
-    this.geometries = [ new THREE.PlaneGeometry( 45, 3, 128, 2 ) ];
-    this.materials = [ new THREE.MeshPhongMaterial({ color: new THREE.Color( Math.random(), Math.random(), Math.random() ) }) ];
-    this.plane = [ new THREE.Mesh(this.geometries[0], this.materials[0]) ];
-    this.plane[0].receiveShadow = true;
-    this.plane[0].castShadow = true;
-    this.scene.add(this.plane[0]);
+    this.rowgroup = new THREE.Object3D(); //create an empty container
+    this.rowgroup.receiveShadow = true;
+    this.rowgroup.castShadow = true;
 
-    console.log(this.geometries[0].vertices);
+    this.createRow();
 
-    // //add background
-    // let geometry = new THREE.PlaneBufferGeometry( 100, 100 );
-    // let material = new THREE.MeshBasicMaterial({ color: '#ccc' });
-    // this.background = new THREE.Mesh(geometry, material);
-    // this.background.position.z = -5;
-    // this.scene.add(this.background);
+    //add plane
+    let geometry1 = new THREE.PlaneBufferGeometry( this.state.n, 1000, this.state.n, 10 );
+    let material1 = new THREE.MeshPhongMaterial({ color: '#e8e8e8' });
+    // material1.wireframe = true;
+    this.plane = new THREE.Mesh(geometry1, material1);
+    this.plane.rotation.x = - (Math.PI * 0.5);
+    this.plane.position.z = -1000/2;
+    this.scene.add(this.plane);
 
     // //ADD CUBE
     // geometry = new THREE.BoxGeometry(1, 1, 1);
@@ -101,8 +134,8 @@ class ThreeScene extends Component{
     // this.scene.add(this.cube);
 
     //add light
-    let pointLight = new THREE.PointLight( 0xefefff, 1, 100, 2 );
-    pointLight.position.set(0, 5, 5);
+    let pointLight = new THREE.PointLight( 0xefefff, 2, 500, 2 );
+    pointLight.position.set(0, this.state.n, this.state.n);
     pointLight.castShadow = true;
 		this.scene.add( pointLight );
 
@@ -127,8 +160,7 @@ class ThreeScene extends Component{
   }
 
   animate() {
-    // this.cube.rotation.x += 0.01;
-    // this.cube.rotation.y += 0.01;
+    stats.begin();
 
     let framecounter = this.state.framecounter;
     let framecounter2 = this.state.framecounter2;
@@ -142,30 +174,23 @@ class ThreeScene extends Component{
     //   framecounter2 = 0;
     // }
 
-    // if(framecounter == 4) {
-    //   this.plane.map((item, i) => {
-    //     item.position.y += 3;
-    //     if(item.position.y == 36) {
-    //      this.plane.pop();
-    //      this.materials.pop();
-    //      this.geometries.pop();
-    //     }
-    //   });
-    //
-    //   this.geometries.unshift( new THREE.PlaneGeometry( 45, 3, 128, 2 ) );
-    //   this.materials.unshift( new THREE.MeshPhongMaterial({ color: new THREE.Color( Math.random(), Math.random(), Math.random() ) }) );
-    //   this.plane.unshift( new THREE.Mesh(this.geometries[0], this.materials[0]) );
-    //   this.scene.add(this.plane[0]);
-    //
-    //   framecounter = 0;
-    // }
+    if(framecounter === 4) {
+      this.allrows.forEach((item, i) => {
+        item.position.z -= 2;
+        if(item.getWorldPosition.z <= -2) {
+         this.scene.remove( item );
+         this.allrows.pop();
+        }
+      });
 
-    this.geometries[0].vertices[180].set(this.geometries[0].vertices[180].x, this.geometries[0].vertices[180].y, 25);// this way you can move each vertex coordinates
-    this.geometries[0].vertices[251].set(this.geometries[0].vertices[251].x, this.geometries[0].vertices[251].y, 25);// this way you can move each vertex coordinates
-    // this.geometries[0].vertices[150].z += 1;
-    this.geometries[0].verticesNeedUpdate=true;
+      this.createRow();
+
+      framecounter = 0;
+    }
 
     this.setState({ framecounter, framecounter2 });
+
+    stats.end();
 
     this.renderScene();
     this.frameId = window.requestAnimationFrame(this.animate);
