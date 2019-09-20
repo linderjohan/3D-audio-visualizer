@@ -54,14 +54,22 @@ class Index extends Component {
 		}
 
 		return(
+<<<<<<< HEAD
 			<main className="wrapper">
+=======
+			<div className="wrapper">
+>>>>>>> 446b428341061d29ae686ba97f77fab0d1d35162
 				<div className="canvas">
 					<ThreeScene/>
 				</div>
 				<div className="menu">
 
 				</div>
+<<<<<<< HEAD
 			</main>
+=======
+			</div>
+>>>>>>> 446b428341061d29ae686ba97f77fab0d1d35162
 		);
 	}
 }
