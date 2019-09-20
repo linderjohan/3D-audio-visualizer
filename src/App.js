@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { BrowserRouter, Route, Switch, Redirect, NavLink as Link } from 'react-router-dom';
 
 import settings from "./settings.json";
+import "index.scss";
 
 import ThreeScene from "./components/ThreeScene";
 import Error from "./components/Error";
@@ -53,11 +54,14 @@ class Index extends Component {
 		}
 
 		return(
-			<div>
-				<main className="wrapper">
+			<main className="wrapper">
+				<div className="canvas">
 					<ThreeScene/>
-				</main>
-			</div>
+				</div>
+				<div className="menu">
+
+				</div>
+			</main>
 		);
 	}
 }

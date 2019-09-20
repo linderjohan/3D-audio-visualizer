@@ -26,7 +26,6 @@ class ThreeScene extends Component{
     this.animate = this.animate.bind(this);
     this.renderScene = this.renderScene.bind(this);
     this.resize = this.resize.bind(this);
-    this.incrementColor = this.incrementColor.bind(this);
     this.randColor = this.randColor.bind(this);
     this.createRow = this.createRow.bind(this);
   }
@@ -60,24 +59,6 @@ class ThreeScene extends Component{
     color.g = Math.random();
     color.b = Math.random();
 
-    return color;
-  }
-
-  //deprecated
-  incrementColor(color, step = 0.01){
-    color.r += step;
-    color.g -= step;
-    color.b += step;
-
-    if(color.r >= 1) {
-      color.r = 0
-    }
-    if(color.g <= 0) {
-      color.g = 1
-    }
-    if(color.r >= 1) {
-      color.r = 0
-    }
     return color;
   }
 
@@ -202,72 +183,12 @@ class ThreeScene extends Component{
 
   render() {
     return(
-      <div
-        style={{ width: "100%", height: "100%"}}
-        ref={(mount) => { this.mount = mount }}
-      />
+        <div
+          style={{ width: "100%", height: "100%"}}
+          ref={(mount) => { this.mount = mount }}
+        />
     )
   }
 }
 
 export default ThreeScene
-
-// class Frame extends Component {
-//   constructor(){
-// 		super();
-//
-// 		// this.state = {
-// 		// 	loading: true
-// 		// };
-//
-// 	}
-//
-//   componentDidUpdate() {
-//     ReactDOM.render(
-//       <Canvas>
-//         <Thing/>
-//       </Canvas>,
-//       document.getElementById('root')
-//     )
-//   }
-//
-// 	render() {
-//     return (
-//       <Canvas>
-//         <Thing/>
-//       </Canvas>
-// 		);
-// 	}
-// }
-//
-// class Thing extends Component {
-//   constructor() {
-//     super();
-//     this.state = {
-//       vertices: [[-1, 0, 0], [0, 1, 0], [1, 0, 0], [0, -1, 0], [-1, 0, 0]]
-//     }
-//   }
-//   render() {
-//     return (
-//       <group>
-//         <line>
-//           <geometry
-//             attach="geometry"
-//             vertices={this.state.vertices.map(v => new THREE.Vector3(...v))}
-//             onUpdate={self => (self.verticesNeedUpdate = true)}
-//           />
-//           <lineBasicMaterial attach="material" color="black" />
-//         </line>
-//         <box
-//           onClick={e => console.log('click')}
-//           onPointerOver={e => console.log('hover')}
-//           onPointerOut={e => console.log('unhover')}>
-//           <octahedronGeometry attach="geometry" />
-//           <meshBasicMaterial attach="material" color="peachpuff" opacity={0.5} transparent />
-//         </box>
-//       </group>
-//     )
-//   }
-// }
-//
-// export default Frame;
