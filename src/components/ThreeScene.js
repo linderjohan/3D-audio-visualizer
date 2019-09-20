@@ -34,25 +34,32 @@ class ThreeScene extends Component{
   createRow() {
     let k = Math.floor((Math.random() * 50) + 1);
     const color = new THREE.Color( Math.random(), Math.random(), Math.random() );
-    let geometry = new THREE.BoxGeometry( 1, k, 1 );
-    let material = new THREE.MeshBasicMaterial({ color });
-    let object = new THREE.Mesh(geometry, material);
-    object.position.x = -(this.state.n/2) + 0.5;
-    object.position.y = k/2;
-    this.rowgroup.attach( object );
+
+    let spectrumGeometry = new THREE.Geometry();
+    let geometry1 = new THREE.BoxGeometry( 1, k, 1 );
+    let geometry2 = new THREE.Geometry();
+    let mesh1 = new THREE.Mesh(geometry1);
+    let mesh2 = new THREE.Mesh();
+    mesh1.position.x = -(this.state.n/2) + 0.5;
+    mesh1.position.y = k/2;
+
+    mesh1.updateMatrix();
+    spectrumGeometry.merge(mesh1.geometry, mesh1.matrix);
 
     for(let i = 1; i < this.state.n; ++i) {
-      k = Math.floor((Math.random() * 50) + 1);
-      geometry = new THREE.BoxGeometry( 1, k, 1);
-      material = new THREE.MeshBasicMaterial({ color });
-      object = new THREE.Mesh(geometry, material);
-      object.position.x = ( i - (this.state.n/2) ) + 0.5;
-      object.position.y = ( k / 2 );
-      this.rowgroup.attach( object );
+      geometry2 = new THREE.BoxGeometry( 1, k, 1);
+      mesh2 = new THREE.Mesh(geometry2);
+      mesh2.position.x = ( i - (this.state.n/2) ) + 0.5;
+      mesh2.position.y = ( k / 2 );
+
+      mesh2.updateMatrix();
+      spectrumGeometry.merge(mesh2.geometry, mesh2.matrix);
     }
 
-    this.scene.add(this.rowgroup);
-    this.allrows.unshift(this.rowgroup);
+    let material = new THREE.MeshBasicMaterial({ color });
+    let spectrum = new THREE.Mesh(spectrumGeometry, material);
+    this.scene.add(spectrum);
+    this.allrows.unshift(spectrum);
   }
 
   randColor(color) {
@@ -82,11 +89,11 @@ class ThreeScene extends Component{
   }
 
   resize(event) {
-    this.camera.aspect = event.target.innerWidth / event.target.innerHeight;
+    this.camera.aspect = document.querySelector(".canvas").innerWidth / document.querySelector(".canvas").innerHeight;
     this.camera.updateProjectionMatrix();
-    this.renderer.setSize(event.target.innerWidth, event.target.innerHeight);
+    this.renderer.setSize(document.querySelector(".canvas").innerWidth, document.querySelector(".canvas").innerHeight);
 
-    this.setState({ width: event.target.innerWidth, height: event.target.innerHeight });
+    this.setState({ width: document.querySelector(".canvas").innerWidth, height: document.querySelector(".canvas").innerHeight });
   }
 
   componentDidMount() {
@@ -112,9 +119,9 @@ class ThreeScene extends Component{
     this.renderer.setSize(this.state.width, this.state.height);
     this.mount.appendChild(this.renderer.domElement);
 
-    this.rowgroup = new THREE.Object3D(); //create an empty container
-    this.rowgroup.receiveShadow = true;
-    this.rowgroup.castShadow = true;
+    // this.rowgroup = new THREE.Object3D(); //create an empty container
+    // this.rowgroup.receiveShadow = true;
+    // this.rowgroup.castShadow = true;
 
     this.createRow();
 
@@ -174,18 +181,19 @@ class ThreeScene extends Component{
     //   framecounter2 = 0;
     // }
 
-    if(framecounter === 4) {
-      this.allrows.forEach((item, i) => {
-        item.position.z -= 2;
-        if(item.getWorldPosition.z <= -2) {
-         this.scene.remove( item );
-         this.allrows.pop();
-        }
-      });
+    // if(framecounter === 4) {
+    //   this.allrows.forEach((item, i) => {
+    //     item.position.z -= 2;
+    //   });
+    //
+    //   this.createRow();
+    //
+    //   framecounter = 0;
+    // }
 
-      this.createRow();
-
-      framecounter = 0;
+    if(this.allrows.length === 5) {
+     this.scene.remove( this.allrows[4].name );
+     this.allrows.pop();
     }
 
     this.setState({ framecounter, framecounter2 });

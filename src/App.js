@@ -53,10 +53,13 @@ class Index extends Component {
 		}
 
 		return(
-			<div>
-				<main className="wrapper">
+			<div className="wrapper">
+				<div className="canvas">
 					<ThreeScene/>
-				</main>
+				</div>
+				<div className="menu">
+
+				</div>
 			</div>
 		);
 	}
