@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { BrowserRouter, Route, Switch, Redirect, NavLink as Link } from 'react-router-dom';
 
 import settings from "./settings.json";
-import "index.scss";
+import "./css/index.scss";
 
 import ThreeScene from "./components/ThreeScene";
 import Error from "./components/Error";
@@ -28,12 +28,51 @@ class Index extends Component {
 		super();
 
 		this.state = {
-			loading: true
+			loading: true,
+			paused: true,
+			displayControls: {display: "none"},
+			analyserNode: {}
 		};
 
 		this.update = this.update.bind(this);
 		this.imageload = this.imageload.bind(this);
+		this.handleUpload = this.handleUpload.bind(this);
+		this.handlePlay = this.handlePlay.bind(this);
+		this.handlePause = this.handlePause.bind(this);
 	}
+
+	handlePlay(e) {
+		this.setState({ paused: false });
+	}
+
+	handlePause(e) {
+		this.setState({ paused: true });
+	}
+
+	handleUpload(e) {
+		this.setState({ displayControls: {display: "block"} });
+
+	  this.music = document.getElementById('music');
+	  this.music.src = URL.createObjectURL(e.target.files[0]);
+		let audioCtx = new AudioContext();
+		const audioSourceNode = audioCtx.createMediaElementSource(this.music);
+
+		const analyserNode = audioCtx.createAnalyser();
+		analyserNode.fftSize = 1024;
+
+		audioSourceNode.connect(analyserNode);
+		analyserNode.connect(audioCtx.destination);
+
+		this.setState({ analyserNode });
+
+		this.frequencies = new Float32Array(analyserNode.frequencyBinCount);
+		analyserNode.getFloatFrequencyData(this.frequencies);
+		console.log(analyserNode);
+	}
+
+	// handleMusicEnd(e) {
+	// 	URL.revokeObjectURL(this.music.src);
+	// }
 
 	update() {
 		this.setState({loading: false});
@@ -54,22 +93,15 @@ class Index extends Component {
 		}
 
 		return(
-<<<<<<< HEAD
 			<main className="wrapper">
-=======
-			<div className="wrapper">
->>>>>>> 446b428341061d29ae686ba97f77fab0d1d35162
 				<div className="canvas">
-					<ThreeScene/>
+					<ThreeScene analyserNode={this.state.analyserNode} paused={this.state.paused}/>
 				</div>
 				<div className="menu">
-
+					<input type="file" id="input" onChange={this.handleUpload}/>
+					<audio id="music" controls onPlay={this.handlePlay} onPause={this.handlePause} style={this.state.displayControls}></audio>
 				</div>
-<<<<<<< HEAD
 			</main>
-=======
-			</div>
->>>>>>> 446b428341061d29ae686ba97f77fab0d1d35162
 		);
 	}
 }
