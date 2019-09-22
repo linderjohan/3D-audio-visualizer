@@ -26,26 +26,31 @@ class ThreeScene extends Component{
     this.randColor = this.randColor.bind(this);
     this.createRow = this.createRow.bind(this);
     this.updateFrequencies = this.updateFrequencies.bind(this);
+    this.handleScroll = this.handleScroll.bind(this);
+  }
+
+  handleScroll(e) {
+    if(!(this.camera.position.z > this.rowamount/2)) {
+      this.camera.position.z -= e.deltaY*2;
+      this.pointLight.position.z -= e.deltaY*2;
+    }
+    else {
+      this.camera.position.z = this.rowamount/2;
+      this.pointLight.position.z = this.rowamount;
+    }
   }
 
   async updateFrequencies() {
     const analyserNode = this.state.analyserNode;
     this.frequencies = new Uint8Array(analyserNode.frequencyBinCount);
     analyserNode.getByteFrequencyData(this.frequencies);
-
-    this.frequencies.forEach((item, i) => {
-      console.log("hej");
-    });
-
-    // console.log(this.frequencies);
   }
 
   createRow() {
-    // console.log(this.frequencies);
-    const color = new THREE.Color( Math.random(), Math.random(), Math.random() );
+    // const color = new THREE.Color( Math.random(), Math.random(), Math.random() );
 
     let spectrumGeometry = new THREE.BoxGeometry();
-    let geometry = new THREE.BoxGeometry();
+    let geometry = new THREE.BoxBufferGeometry();
     let mesh = new THREE.Mesh();
 
     for(let i = 0; i < this.rowamount; ++i) {
@@ -58,7 +63,8 @@ class ThreeScene extends Component{
       spectrumGeometry.merge(mesh.geometry, mesh.matrix);
     }
 
-    let material = new THREE.MeshPhongMaterial({ color });
+  	let material = new THREE.MeshPhongMaterial({ color: '#618dc6', shininess: 80 });
+
     let spectrum = new THREE.Mesh(spectrumGeometry, material);
     this.scene.add(spectrum);
     this.allrows.unshift(spectrum);
@@ -83,6 +89,7 @@ class ThreeScene extends Component{
 
   componentDidMount() {
     window.addEventListener('resize', this.resize);
+    document.querySelector(".canvas").addEventListener('wheel', this.handleScroll);
     this.height = document.querySelector(".canvas").offsetHeight;
     this.width = document.querySelector(".canvas").offsetWidth;
     this.framecounter = 0;
@@ -122,10 +129,10 @@ class ThreeScene extends Component{
     // this.scene.add(this.plane);
 
     //add light
-    let pointLight = new THREE.PointLight( 0xefefff, 3, 300, 2 );
-    pointLight.position.set(0, this.rowamount, this.rowamount);
-    pointLight.castShadow = true;
-		this.scene.add( pointLight );
+    this.pointLight = new THREE.PointLight( 0xefefff, 3, 300, 2 );
+    this.pointLight.position.set(0, this.rowamount, this.rowamount);
+    this.pointLight.castShadow = true;
+		this.scene.add( this.pointLight );
 
     this.start();
   }
@@ -139,6 +146,7 @@ class ThreeScene extends Component{
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.resize);
+    document.querySelector(".canvas").removeEventListener('mousewheel', this.handleScroll);
 
     this.stop();
     this.mount.removeChild(this.renderer.domElement);
@@ -179,10 +187,10 @@ class ThreeScene extends Component{
         this.framecounter = 0;
       }
 
-      if(this.allrows.length === 75) {
-       this.scene.remove( this.allrows[74] );
-       this.allrows.pop();
-      }
+      // if(this.allrows.length === 75) {
+      //  this.scene.remove( this.allrows[74] );
+      //  this.allrows.pop();
+      // }
 
       stats.end();
     }

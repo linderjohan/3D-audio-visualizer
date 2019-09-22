@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { BrowserRouter, Route, Switch, Redirect, NavLink as Link } from 'react-router-dom';
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
 import settings from "./settings.json";
 import "./css/index.scss";
@@ -9,7 +9,7 @@ import Error from "./components/Error";
 
 class App extends Component {
 	render() {
-		let url = window.location.href.replace("http://", "").replace(".vlq.se", "").split("/");
+		// let url = window.location.href.replace("http://", "").replace(".vlq.se", "").split("/");
 
 		return(
 			<BrowserRouter>
@@ -67,7 +67,6 @@ class Index extends Component {
 
 		this.frequencies = new Float32Array(analyserNode.frequencyBinCount);
 		analyserNode.getFloatFrequencyData(this.frequencies);
-		console.log(analyserNode);
 	}
 
 	// handleMusicEnd(e) {
