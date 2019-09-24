@@ -30,13 +30,18 @@ class ThreeScene extends Component{
   }
 
   handleScroll(e) {
-    if(!(this.camera.position.z > this.rowamount/2)) {
-      this.camera.position.z -= e.deltaY*2;
-      this.pointLight.position.z -= e.deltaY*2;
-    }
-    else {
-      this.camera.position.z = this.rowamount/2;
-      this.pointLight.position.z = this.rowamount;
+    if(this.state.paused) {
+      if(this.camera.position.z < ((3 * this.rowamount)/8) - 6) {
+          this.camera.position.z += e.deltaY*2;
+          this.pointLight.position.z += e.deltaY*2;
+      }
+
+      if(this.camera.position.z >= ((3 * this.rowamount)/8) - 6) {
+        if(e.deltaY < 0) {
+          this.camera.position.z += e.deltaY*2;
+          this.pointLight.position.z += e.deltaY*2;
+        }
+      }
     }
   }
 
@@ -106,7 +111,7 @@ class ThreeScene extends Component{
       60, this.width / this.height, 5, 500
     );
 
-    this.camera.position.z = this.rowamount/2;
+    this.camera.position.z = ((3 * this.rowamount)/8) - 6;
     this.camera.position.y = (2 * this.rowamount)/4;
     this.camera.rotation.x = -(Math.PI * 0.15);
 
@@ -165,6 +170,9 @@ class ThreeScene extends Component{
   animate() {
     if(!this.state.paused) {
       stats.begin();
+
+      this.camera.position.z = ((3 * this.rowamount)/8) - 6;
+      this.pointLight.position.z = this.rowamount;
 
       this.framecounter++;
       this.framecounter2++;
