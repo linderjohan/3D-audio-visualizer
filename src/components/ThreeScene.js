@@ -27,6 +27,7 @@ class ThreeScene extends Component{
     this.createRow = this.createRow.bind(this);
     this.updateFrequencies = this.updateFrequencies.bind(this);
     this.handleScroll = this.handleScroll.bind(this);
+    this.incrementColor = this.incrementColor.bind(this);
   }
 
   handleScroll(e) {
@@ -54,7 +55,7 @@ class ThreeScene extends Component{
         lastIndex = i;
       }
       else if(i < 40) {
-        let index = Math.floor(((41)/(1 + i)) * Math.pow(1.12201, i));
+        let index = Math.ceil(((41)/(1 + i)) * Math.pow(1.12201, i));
         let amount = 0;
         let sum = 0;
 
@@ -69,7 +70,7 @@ class ThreeScene extends Component{
         lastIndex = index;
       }
       else {
-        let index = Math.floor(((384-2*i)/i) * Math.pow(1.06634, i));
+        let index = Math.ceil(((384-2*i)/i) * Math.pow(1.06634, i));
         let amount = 0;
         let sum = 0;
 
@@ -94,20 +95,87 @@ class ThreeScene extends Component{
     let mesh = new THREE.Mesh();
 
     for(let i = 0; i < this.rowamount; ++i) {
-      geometry = new THREE.BoxGeometry( 1, (this.frequencies[i])/10, 1);
+      geometry = new THREE.BoxGeometry( 1, (this.frequencies[i])/2, 1);
       mesh = new THREE.Mesh(geometry);
       mesh.position.x = ( i - (this.rowamount/2) ) + 0.5;
-      mesh.position.y = ( this.frequencies[i] / 2 )/10;
+      // mesh.position.y = ( this.frequencies[i] / 2 )/10;
 
       mesh.updateMatrix();
       spectrumGeometry.merge(mesh.geometry, mesh.matrix);
     }
+    //this.incrementColor(this.allrows[0].material)
+    // if(this.allrows[0] != undefined) {
+    //   console.log(this.allrows[0].material.color);
+    // }
+  	let material = new THREE.MeshPhongMaterial({ color: new THREE.Color(0, 1, 0) , shininess: 80 });
 
-  	let material = new THREE.MeshPhongMaterial({ color: '#618dc6', shininess: 80 });
+    if(this.allrows[0] !== undefined) {
+      material.color = this.incrementColor(this.allrows[0].material.color);
+    }
+    if(this.allrows[0] !== undefined && this.allrows[1] !== undefined) {
+      material.color = this.incrementColor(this.allrows[0].material.color, this.allrows[1].material.color);
+    }
 
     let spectrum = new THREE.Mesh(spectrumGeometry, material);
     this.scene.add(spectrum);
     this.allrows.unshift(spectrum);
+  }
+
+  incrementColor(recentColor, oldColor = null) {
+    let r = recentColor.r;
+    let g = recentColor.g;
+    let b = recentColor.b;
+
+    if(oldColor === null) {
+      r += 0.01;
+      g -= 0.01;
+      b += 0.01
+      return new THREE.Color(r, g, b);
+    }
+
+    //red channel
+    if(r - oldColor.r > 0) {
+      r += 0.01;
+      if(r >= 1) {
+        r -= 0.02;
+      }
+    }
+    else {
+      r -= 0.01;
+      if(r <= 0) {
+        r += 0.02
+      }
+    }
+
+    //green channel
+    if(g - oldColor.g > 0) {
+      g += 0.02;
+      if(g >= 1) {
+        g -= 0.04;
+      }
+    }
+    else {
+      g -= 0.02;
+      if(g <= 0) {
+        g += 0.04
+      }
+    }
+
+    //blue channel
+    if(b - oldColor.b > 0) {
+      b += 0.05;
+      if(b >= 1) {
+        b -= 0.1;
+      }
+    }
+    else {
+      b -= 0.05;
+      if(b <= 0) {
+        b += 0.1
+      }
+    }
+
+    return new THREE.Color(r, g, b);
   }
 
   randColor(color) {
