@@ -50,6 +50,7 @@ class Index extends Component {
 	}
 
 	handleUpload(e) {
+		const AudioContext = (window.AudioContext || window.webkitAudioContext);
 		this.setState({ displayControls: {display: "block"} });
 
 	  this.music = document.getElementById('music');
@@ -58,7 +59,7 @@ class Index extends Component {
 		const audioSourceNode = audioCtx.createMediaElementSource(this.music);
 
 		const analyserNode = audioCtx.createAnalyser();
-		analyserNode.fftSize = 1024;
+		analyserNode.fftSize = 32768;
 
 		audioSourceNode.connect(analyserNode);
 		analyserNode.connect(audioCtx.destination);

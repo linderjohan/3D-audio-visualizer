@@ -42,8 +42,35 @@ class ThreeScene extends Component{
 
   async updateFrequencies() {
     const analyserNode = this.state.analyserNode;
-    this.frequencies = new Uint8Array(analyserNode.frequencyBinCount);
-    analyserNode.getByteFrequencyData(this.frequencies);
+    const allFreq = new Uint8Array(analyserNode.frequencyBinCount);
+    this.frequencies = [];
+    analyserNode.getByteFrequencyData(allFreq);
+
+    let lastIndex = 0;
+    //frequencybincount = 16
+    for(let i = 0; i < 128; ++i) {
+      if(i < 23) {
+        // let index = Math.floor(i/5);
+        this.frequencies.push( allFreq[i*5] );
+      }
+      else {
+        let index = Math.floor(((512-3*i)/i) * Math.pow(1.07795, i));
+        let amount = 0;
+        let sum = 0;
+        console.log(index);
+        console.log(lastIndex);
+
+        for(let k = lastIndex; k < index; k++) {
+          if(allFreq[k] > 0) {
+            sum += allFreq[k];
+            amount++;
+          }
+        }
+
+        this.frequencies.push( isNaN(sum/amount) ? 0 : sum/amount );
+        lastIndex = index;
+      }
+    }
   }
 
   createRow() {
