@@ -59,7 +59,7 @@ class Index extends Component {
 		const audioSourceNode = audioCtx.createMediaElementSource(this.music);
 
 		const analyserNode = audioCtx.createAnalyser();
-		analyserNode.fftSize = 32768;
+		analyserNode.fftSize = 8192;
 
 		audioSourceNode.connect(analyserNode);
 		analyserNode.connect(audioCtx.destination);

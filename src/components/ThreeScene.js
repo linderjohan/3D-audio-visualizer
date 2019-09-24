@@ -49,16 +49,29 @@ class ThreeScene extends Component{
     let lastIndex = 0;
     //frequencybincount = 16
     for(let i = 0; i < 128; ++i) {
-      if(i < 23) {
-        // let index = Math.floor(i/5);
-        this.frequencies.push( allFreq[i*5] );
+      if(i < 15) {
+        this.frequencies.push( allFreq[i] );
+        lastIndex = i;
       }
-      else {
-        let index = Math.floor(((512-3*i)/i) * Math.pow(1.07795, i));
+      else if(i < 40) {
+        let index = Math.floor(((41)/(1 + i)) * Math.pow(1.12201, i));
         let amount = 0;
         let sum = 0;
-        console.log(index);
-        console.log(lastIndex);
+
+        for(let k = lastIndex; k < index; k++) {
+          if(allFreq[k] > 0) {
+            sum += allFreq[k];
+            amount++;
+          }
+        }
+
+        this.frequencies.push( isNaN(sum/amount) ? 0 : sum/amount );
+        lastIndex = index;
+      }
+      else {
+        let index = Math.floor(((384-2*i)/i) * Math.pow(1.06634, i));
+        let amount = 0;
+        let sum = 0;
 
         for(let k = lastIndex; k < index; k++) {
           if(allFreq[k] > 0) {
