@@ -54,33 +54,18 @@ class ThreeScene extends Component{
 
     let lastIndex = 0;
     //frequencybincount = 16
-    for(let i = 0; i < 128; ++i) {
-      if(i < 15) {
+    for(let i = 0; i < this.rowamount; ++i) {
+      if(i < 2) {
         this.frequencies.push( allFreq[i] );
         lastIndex = i;
       }
-      else if(i < 40) {
-        let index = Math.ceil(((41)/(1 + i)) * Math.pow(1.12201, i));
-        let amount = 0;
-        let sum = 0;
-
-        for(let k = lastIndex; k < index; k++) {
-          if(allFreq[k] > 0) {
-            sum += allFreq[k];
-            amount++;
-          }
-        }
-
-        this.frequencies.push( isNaN(sum/amount) ? 0 : sum/amount );
-        lastIndex = index;
-      }
       else {
-        let index = Math.ceil(((384-2*i)/i) * Math.pow(1.06634, i));
+        let index = Math.ceil(Math.pow(this.c, Math.pow(i, 1/2)) - 1);
         let amount = 0;
         let sum = 0;
 
         for(let k = lastIndex; k < index; k++) {
-          if(allFreq[k] > 0) {
+          if(allFreq[k] > 10) {
             sum += allFreq[k];
             amount++;
           }
@@ -93,8 +78,6 @@ class ThreeScene extends Component{
   }
 
   createRow() {
-    // const color = new THREE.Color( Math.random(), Math.random(), Math.random() );
-
     let spectrumGeometry = new THREE.BoxGeometry();
     let geometry = new THREE.BoxBufferGeometry();
     let mesh = new THREE.Mesh();
@@ -108,11 +91,9 @@ class ThreeScene extends Component{
       mesh.updateMatrix();
       spectrumGeometry.merge(mesh.geometry, mesh.matrix);
     }
-    //this.incrementColor(this.allrows[0].material)
-    // if(this.allrows[0] != undefined) {
-    //   console.log(this.allrows[0].material.color);
-    // }
-  	let material = new THREE.MeshPhongMaterial({ color: new THREE.Color(0, 1, 0) , shininess: 80 });
+
+  	// let material = new THREE.MeshPhongMaterial({ color: new THREE.Color(0.2, 0.9, 0.4) , shininess: 80 });
+  	let material = new THREE.MeshToonMaterial({ color: new THREE.Color(0.2, 0.9, 0.4) });
 
     if(this.allrows[0] !== undefined) {
       material.color = this.incrementColor(this.allrows[0].material.color);
@@ -122,8 +103,14 @@ class ThreeScene extends Component{
     }
 
     let spectrum = new THREE.Mesh(spectrumGeometry, material);
-    this.scene.add(spectrum);
+    this.sceneRoot.add(spectrum);
     this.allrows.unshift(spectrum);
+
+    const which = 100;
+
+    if(this.allrows.length > which) {
+      this.sceneRoot.remove(this.allrows[which]);
+    }
   }
 
   incrementColor(recentColor, oldColor = null) {
@@ -132,51 +119,51 @@ class ThreeScene extends Component{
     let b = recentColor.b;
 
     if(oldColor === null) {
-      r += 0.01;
-      g -= 0.01;
-      b += 0.01
+      r += 0.001;
+      g -= 0.001;
+      b += 0.001
       return new THREE.Color(r, g, b);
     }
 
     //red channel
     if(r - oldColor.r > 0) {
-      r += 0.01;
+      r += 0.001;
       if(r >= 1) {
-        r -= 0.02;
+        r -= 0.002;
       }
     }
     else {
-      r -= 0.01;
+      r -= 0.001;
       if(r <= 0) {
-        r += 0.02
+        r += 0.002
       }
     }
 
     //green channel
     if(g - oldColor.g > 0) {
-      g += 0.02;
+      g += 0.002;
       if(g >= 1) {
-        g -= 0.04;
+        g -= 0.004;
       }
     }
     else {
-      g -= 0.02;
+      g -= 0.002;
       if(g <= 0) {
-        g += 0.04
+        g += 0.004
       }
     }
 
     //blue channel
     if(b - oldColor.b > 0) {
-      b += 0.05;
+      b += 0.005;
       if(b >= 1) {
-        b -= 0.1;
+        b -= 0.01;
       }
     }
     else {
-      b -= 0.05;
+      b -= 0.005;
       if(b <= 0) {
-        b += 0.1
+        b += 0.01
       }
     }
 
@@ -201,18 +188,22 @@ class ThreeScene extends Component{
   }
 
   componentDidMount() {
+    //constant for logaritm
+    this.rowamount = 128;
+    this.c = Math.pow(3157, (1/Math.pow(this.rowamount, 1/2)));
+
     window.addEventListener('resize', this.resize);
     document.querySelector(".canvas").addEventListener('wheel', this.handleScroll);
     this.height = document.querySelector(".canvas").offsetHeight;
     this.width = document.querySelector(".canvas").offsetWidth;
     this.framecounter = 0;
-    this.framecounter2 = 0;
-    this.rowamount = 128;
 
     this.allrows = [];
 
     //ADD SCENE
     this.scene = new THREE.Scene();
+    this.sceneRoot = new THREE.Object3D();
+    this.scene.add(this.sceneRoot);
 
     //ADD CAMERA
     this.camera = new THREE.PerspectiveCamera(
@@ -229,20 +220,8 @@ class ThreeScene extends Component{
     this.renderer.setSize(this.width, this.height);
     this.mount.appendChild(this.renderer.domElement);
 
-    // //First row
-    // this.createRow();
-
-    // //add plane
-    // let geometry1 = new THREE.PlaneBufferGeometry( this.rowamount, 1000, this.rowamount, 10 );
-    // let material1 = new THREE.MeshPhongMaterial({ color: '#e8e8e8' });
-    // // material1.wireframe = true;
-    // this.plane = new THREE.Mesh(geometry1, material1);
-    // this.plane.rotation.x = - (Math.PI * 0.5);
-    // this.plane.position.z = -1000/2;
-    // this.scene.add(this.plane);
-
     //add light
-    this.pointLight = new THREE.PointLight( 0xefefff, 3, 300, 2 );
+    this.pointLight = new THREE.PointLight( 0xefefff, 5, 300, 2 );
     this.pointLight.position.set(0, this.rowamount, this.rowamount);
     this.pointLight.castShadow = true;
 		this.scene.add( this.pointLight );
@@ -279,18 +258,10 @@ class ThreeScene extends Component{
     if(!this.state.paused) {
       stats.begin();
 
-      this.camera.position.z = ((3 * this.rowamount)/8) - 6;
-      this.pointLight.position.z = this.rowamount;
+      // this.camera.position.z = ((3 * this.rowamount)/8) - 6;
+      // this.pointLight.position.z = this.rowamount;
 
       this.framecounter++;
-      this.framecounter2++;
-
-      // if(this.framecounter2 === 10) {
-      //   this.materials.map((item, i) => {
-      //     item.color = this.randColor(item.color);
-      //   });
-      //   this.framecounter2 = 0;
-      // }
 
       if(this.framecounter === 3) {
         this.allrows.forEach((item, i) => {
