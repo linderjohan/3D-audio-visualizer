@@ -113,7 +113,7 @@ class ThreeScene extends Component{
     var material = new THREE.ShaderMaterial({
         uniforms: uniforms,
         fragmentShader: document.getElementById("fragmentShader").textContent,
-        vertexShader: THREE.ShaderLib.phong.vertexShader,
+        vertexShader: document.getElementById("vertexShader").textContent,
         lights: true
     })
 
