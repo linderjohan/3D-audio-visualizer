@@ -23,16 +23,12 @@ class ThreeScene extends Component{
     this.animate = this.animate.bind(this);
     this.renderScene = this.renderScene.bind(this);
     this.resize = this.resize.bind(this);
-    this.randColor = this.randColor.bind(this);
     this.createRow = this.createRow.bind(this);
     this.createRandomRow = this.createRandomRow.bind(this);
     this.updateFrequencies = this.updateFrequencies.bind(this);
     this.handleScroll = this.handleScroll.bind(this);
     this.incrementColor = this.incrementColor.bind(this);
-    this.makeGradientCube = this.makeGradientCube.bind(this);
-
   }
-
 
   handleScroll(e) {
     if(this.state.paused) {
@@ -81,28 +77,13 @@ class ThreeScene extends Component{
     }
   }
 
-  makeGradientCube(h){
-      var cubeGeometry = new THREE.BoxGeometry(1, h, 1);
-      return new THREE.Mesh(cubeGeometry);
-  }
-
-
   createRow() {
     let spectrumGeometry = new THREE.BoxGeometry();
-<<<<<<< HEAD
-    let geometry = new THREE.BoxGeometry();
-=======
-    //let geometry = new THREE.BoxBufferGeometry();
->>>>>>> cae84f66ef1c66cd97d007020c45d02e803d5637
     let mesh = new THREE.Mesh();
-    //let color = this.incrementColor(this.recentColor, this.oldColor);
-    //let color =
 
     for(let i = 0; i < this.rowamount; ++i) {
-      // geometry = new THREE.BoxGeometry( 1, (this.frequencies[i])/2, 1);
-      // mesh = new THREE.Mesh(geometry);
-
-      mesh = this.makeGradientCube(this.frequencies[i]/2);
+      let cubeGeometry = new THREE.BoxGeometry(1, this.frequencies[i]/2, 1);
+      mesh = new THREE.Mesh(cubeGeometry);
       mesh.position.x = ( i - (this.rowamount/2) ) + 0.5;
       // mesh.position.y = ( this.frequencies[i] / 2 )/10;
 
@@ -110,11 +91,8 @@ class ThreeScene extends Component{
       spectrumGeometry.merge(mesh.geometry, mesh.matrix);
     }
 
-  	// let material = new THREE.MeshPhongMaterial({ color: new THREE.Color(0.2, 0.9, 0.4) , shininess: 80 });
-  	// let material = new THREE.MeshToonMaterial({ color: new THREE.Color(0.2, 0.9, 0.4) });
-    //
-    var white = new THREE.Color( 'white' );
-    var c = new THREE.Color(0,1,0);
+    var white = new THREE.Color( 1, 1, 1 );
+    var c = new THREE.Color( 0, 1, 0 );
 
     if(this.allrows[0] !== undefined) {
       c = this.incrementColor(this.allrows[0].material.uniforms.colorB.value);
@@ -123,14 +101,13 @@ class ThreeScene extends Component{
       c = this.incrementColor(this.allrows[0].material.uniforms.colorB.value, this.allrows[1].material.uniforms.colorB.value);
     }
 
-
     let uniforms = {
       colorB: {type: 'vec3', value: c},
-      colorA: {type: 'vec3', value: white},
-      light: {type: 'vec3', value: this.pointLight.position},
-      intensity: {type: 'float', value: (this.pointLight.power/(4*Math.PI))}
+      colorA: {type: 'vec3', value: white}
     }
 
+    // light: {type: 'vec3', value: this.pointLight.position},
+    // intensity: {type: 'float', value: (this.pointLight.power/(4*Math.PI))}
 
     var material = new THREE.ShaderMaterial({
         uniforms: uniforms,
@@ -138,29 +115,26 @@ class ThreeScene extends Component{
         vertexShader: document.getElementById("vertexShader").textContent,
     })
 
+    // console.log(material.position);
+
     let spectrum = new THREE.Mesh(spectrumGeometry, material);
     this.sceneRoot.add(spectrum);
     this.allrows.unshift(spectrum);
 
-    const which = 10;
+    const whichToRemove = 10;
 
-    if(this.allrows.length > which) {
-      this.sceneRoot.remove(this.allrows[which]);
+    if(this.allrows.length > whichToRemove) {
+      this.sceneRoot.remove(this.allrows[whichToRemove]);
     }
   }
 
-  createRandomRow(){
+  createRandomRow() {
     let spectrumGeometry = new THREE.BoxGeometry();
-    //let geometry = new THREE.BoxBufferGeometry();
     let mesh = new THREE.Mesh();
-    //let color = this.incrementColor(this.recentColor, this.oldColor);
-    //let color =
 
     for(let i = 0; i < this.rowamount; ++i) {
-      // geometry = new THREE.BoxGeometry( 1, (this.frequencies[i])/2, 1);
-      // mesh = new THREE.Mesh(geometry);
-
-      mesh = this.makeGradientCube(Math.random()*100);
+      let cubeGeometry = new THREE.BoxGeometry(1, Math.random()*100, 1);
+      mesh = new THREE.Mesh(cubeGeometry);
       mesh.position.x = ( i - (this.rowamount/2) ) + 0.5;
       // mesh.position.y = ( this.frequencies[i] / 2 )/10;
 
@@ -168,40 +142,28 @@ class ThreeScene extends Component{
       spectrumGeometry.merge(mesh.geometry, mesh.matrix);
     }
 
-    	// let material = new THREE.MeshPhongMaterial({ color: new THREE.Color(0.2, 0.9, 0.4) , shininess: 80 });
-    	// let material = new THREE.MeshToonMaterial({ color: new THREE.Color(0.2, 0.9, 0.4) });
-    //
     var white = new THREE.Color( 'white' );
     var c = new THREE.Color(0,1,0);
 
-    if(this.allrows[0] !== undefined) {
-      c = this.incrementColor(this.allrows[0].material.uniforms.colorB.value);
-      console.log(this.allrows[0].material.uniforms.colorB.value);
-    }
-    if(this.allrows[0] !== undefined && this.allrows[1] !== undefined) {
-      c = this.incrementColor(this.allrows[0].material.uniforms.colorB.value, this.allrows[1].material.uniforms.colorB.value);
-    }
     let uniforms = {
       colorB: {type: 'vec3', value: c},
       colorA: {type: 'vec3', value: white}
       }
 
-
       var material = new THREE.ShaderMaterial({
           uniforms: uniforms,
           fragmentShader: document.getElementById("fragmentShader").textContent,
-          vertexShader: document.getElementById("vertexShader").textContent,
+          vertexShader: document.getElementById("vertexShader").textContent
       })
 
     let spectrum = new THREE.Mesh(spectrumGeometry, material);
     this.sceneRoot.add(spectrum);
-    }
+  }
 
   incrementColor(recentColor, oldColor = null) {
     let r = recentColor.r;
     let g = recentColor.g;
     let b = recentColor.b;
-    //console.log(recentColor);
 
     if(oldColor === null) {
       r += 0.001;
@@ -254,14 +216,6 @@ class ThreeScene extends Component{
     return new THREE.Color(r, g, b);
   }
 
-  randColor(color) {
-    color.r = Math.random();
-    color.g = Math.random();
-    color.b = Math.random();
-
-    return color;
-  }
-
   resize(event) {
     this.camera.aspect = document.querySelector(".canvas").offsetWidth / document.querySelector(".canvas").offsetHeight;
     this.camera.updateProjectionMatrix();
@@ -283,8 +237,6 @@ class ThreeScene extends Component{
     this.framecounter = 0;
 
     this.allrows = [];
-    // this.lastColor = new THREE.Color(1,0,0);
-    // this.oldColor = new THREE.Color(1,0,0);
 
     //ADD SCENE
     this.scene = new THREE.Scene();
@@ -311,8 +263,6 @@ class ThreeScene extends Component{
     this.pointLight.position.set(0, this.rowamount, this.rowamount);
     this.pointLight.castShadow = true;
 		this.scene.add( this.pointLight );
-
-
 
     this.start();
   }
@@ -343,7 +293,6 @@ class ThreeScene extends Component{
   }
 
   animate() {
-
     if(!this.state.paused) {
       stats.begin();
 
