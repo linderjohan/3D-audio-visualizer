@@ -67,6 +67,36 @@
     <title>-</title>
   </head>
   <body>
+
+      <!-- <script src="node_modules/three/build/three.js"></script> -->
+
+      <script id="vertexShader" type="x-shader/x-vertex">
+          // vertex shader's code goes here
+          varying vec3 vUv;
+
+          void main() {
+              vUv = position;
+
+              vec4 modelViewPosition = modelViewMatrix * vec4(position, 1.0);
+              gl_Position = projectionMatrix * modelViewPosition;
+          }
+      </script>
+      <script id="fragmentShader" type="x-shader/x-fragment">
+          // fragment shader's code goes here
+          uniform vec3 colorA;
+          uniform vec3 colorB;
+          uniform vec3 light;
+          uniform float intensity;
+          varying vec3 vUv;
+
+          //float3 normal = normalize(i.worldNormal);
+
+          void main() {
+              gl_FragColor = vec4(mix(colorA, colorB, (0.03*vUv.y + 0.5)), 1.0);
+          }
+      </script>
+
+
     <noscript>
       You need to enable JavaScript to run this app.
     </noscript>
