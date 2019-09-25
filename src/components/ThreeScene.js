@@ -89,11 +89,9 @@ class ThreeScene extends Component{
 
   createRow() {
     let spectrumGeometry = new THREE.BoxGeometry();
-<<<<<<< HEAD
-    let geometry = new THREE.BoxGeometry();
-=======
+
     //let geometry = new THREE.BoxBufferGeometry();
->>>>>>> cae84f66ef1c66cd97d007020c45d02e803d5637
+
     let mesh = new THREE.Mesh();
     //let color = this.incrementColor(this.recentColor, this.oldColor);
     //let color =
@@ -123,19 +121,18 @@ class ThreeScene extends Component{
       c = this.incrementColor(this.allrows[0].material.uniforms.colorB.value, this.allrows[1].material.uniforms.colorB.value);
     }
 
-
-    let uniforms = {
-      colorB: {type: 'vec3', value: c},
-      colorA: {type: 'vec3', value: white},
-      light: {type: 'vec3', value: this.pointLight.position},
-      intensity: {type: 'float', value: (this.pointLight.power/(4*Math.PI))}
-    }
+    let uniforms = THREE.UniformsUtils.merge([
+        THREE.ShaderLib.phong.uniforms,
+        { colorB: {type: 'vec3', value: c }},
+        { colorA: {type: 'vec3', value: white}}
+    ]);
 
 
     var material = new THREE.ShaderMaterial({
         uniforms: uniforms,
         fragmentShader: document.getElementById("fragmentShader").textContent,
-        vertexShader: document.getElementById("vertexShader").textContent,
+        vertexShader: THREE.ShaderLib.phong.vertexShader,
+        lights: true
     })
 
     let spectrum = new THREE.Mesh(spectrumGeometry, material);
