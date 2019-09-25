@@ -46,7 +46,7 @@ class ThreeScene extends Component{
     }
   }
 
-  async updateFrequencies() {
+  updateFrequencies() {
     const analyserNode = this.state.analyserNode;
     const allFreq = new Uint8Array(analyserNode.frequencyBinCount);
     this.frequencies = [];
@@ -79,7 +79,7 @@ class ThreeScene extends Component{
 
   createRow() {
     let spectrumGeometry = new THREE.BoxGeometry();
-    let geometry = new THREE.BoxBufferGeometry();
+    let geometry = new THREE.BoxGeometry();
     let mesh = new THREE.Mesh();
 
     for(let i = 0; i < this.rowamount; ++i) {
