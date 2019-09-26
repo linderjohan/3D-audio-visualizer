@@ -48,7 +48,7 @@ class ThreeScene extends Component{
   }
 
   interpolate(before, after, atPoint) {
-        return Math.abs( before + (after - before) * atPoint );
+    return Math.abs( before + (after - before) * atPoint );
   };
 
   updateFrequencies() {
@@ -59,10 +59,21 @@ class ThreeScene extends Component{
 
     let lastIndex = 0;
 
-    for(let i = 0; i < this.rowamount; ++i) {
-      if(i < 2) {
-        this.frequencies.push( allFreq[i] );
-        lastIndex = i;
+    for(let i = 0; i < this.rowamount + 10; ++i) {
+      if(i === 0) {
+        this.frequencies.push( 1 );
+      }
+      else if(i > 0 && i < 5) {
+        let res = this.interpolate( this.frequencies[i-1], allFreq[this.index[5]], 0.02 );
+        this.frequencies.push( res < 0 ? res : res );
+        lastIndex = this.index[i];
+      }
+      else if(i > this.rowamount) {
+        this.frequencies.push( this.interpolate(this.frequencies[i-1], 1, 0.2) );
+        lastIndex = this.index[i];
+      }
+      else if(i === this.rowamount + 10) {
+        this.frequencies.push( 1 );
       }
       else {
         let amount = 0;
@@ -75,7 +86,7 @@ class ThreeScene extends Component{
           }
         }
 
-        let mean = isNaN(sum/amount) ? 0 : sum/amount;
+        let mean = isNaN(sum/amount) ? 1 : sum/amount;
 
         this.frequencies.push( this.interpolate(this.frequencies[i-1], mean, 0.5) );
         lastIndex = this.index[i];
@@ -84,13 +95,13 @@ class ThreeScene extends Component{
   }
 
   createRow() {
-    let spectrumGeometry = new THREE.BoxGeometry();
+    let spectrumGeometry = new THREE.Geometry();
     let mesh = new THREE.Mesh();
 
-    for(let i = 0; i < this.rowamount; ++i) {
-      let cubeGeometry = new THREE.BoxGeometry(1, this.frequencies[i]/2.5, 1);
+    for(let i = 0; i < this.rowamount + 10; ++i) {
+      let cubeGeometry = new THREE.BoxGeometry(2, this.frequencies[i]/2.5, 2);
       mesh = new THREE.Mesh(cubeGeometry);
-      mesh.position.x = ( i - (this.rowamount/2) ) + 0.5;
+      mesh.position.x = ( (i) - ((this.rowamount + 10) / 2) ) + 0.5;
       // mesh.position.y = ( this.frequencies[i] / 2 )/10;
 
       mesh.updateMatrix();
