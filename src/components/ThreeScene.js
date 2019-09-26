@@ -28,6 +28,7 @@ class ThreeScene extends Component{
     this.updateFrequencies = this.updateFrequencies.bind(this);
     this.handleScroll = this.handleScroll.bind(this);
     this.incrementColor = this.incrementColor.bind(this);
+    this.interpolate = this.interpolate.bind(this);
   }
 
   handleScroll(e) {
@@ -46,6 +47,10 @@ class ThreeScene extends Component{
     }
   }
 
+  interpolate(before, after, atPoint) {
+        return Math.abs( before + (after - before) * atPoint );
+  };
+
   updateFrequencies() {
     const analyserNode = this.state.analyserNode;
     const allFreq = new Uint8Array(analyserNode.frequencyBinCount);
@@ -53,26 +58,27 @@ class ThreeScene extends Component{
     analyserNode.getByteFrequencyData(allFreq);
 
     let lastIndex = 0;
-    //frequencybincount = 16
+
     for(let i = 0; i < this.rowamount; ++i) {
       if(i < 2) {
         this.frequencies.push( allFreq[i] );
         lastIndex = i;
       }
       else {
-        let index = Math.ceil(Math.pow(this.c, Math.pow(i, 1/2)) - 1);
         let amount = 0;
         let sum = 0;
 
-        for(let k = lastIndex; k < index; k++) {
-          if(allFreq[k] > 10) {
+        for(let k = lastIndex; k <= this.index[i+1]; k++) {
+          if(allFreq[k] > 1) {
             sum += allFreq[k];
             amount++;
           }
         }
 
-        this.frequencies.push( isNaN(sum/amount) ? 0 : sum/amount );
-        lastIndex = index;
+        let mean = isNaN(sum/amount) ? 0 : sum/amount;
+
+        this.frequencies.push( this.interpolate(this.frequencies[i-1], mean, 0.5) );
+        lastIndex = this.index[i];
       }
     }
   }
@@ -82,7 +88,7 @@ class ThreeScene extends Component{
     let mesh = new THREE.Mesh();
 
     for(let i = 0; i < this.rowamount; ++i) {
-      let cubeGeometry = new THREE.BoxGeometry(1, this.frequencies[i]/2, 1);
+      let cubeGeometry = new THREE.BoxGeometry(1, this.frequencies[i]/2.5, 1);
       mesh = new THREE.Mesh(cubeGeometry);
       mesh.position.x = ( i - (this.rowamount/2) ) + 0.5;
       // mesh.position.y = ( this.frequencies[i] / 2 )/10;
@@ -107,9 +113,6 @@ class ThreeScene extends Component{
         { colorA: {type: 'vec3', value: white}}
     ]);
 
-    // light: {type: 'vec3', value: this.pointLight.position},
-    // intensity: {type: 'float', value: (this.pointLight.power/(4*Math.PI))}
-
     var material = new THREE.ShaderMaterial({
         uniforms: uniforms,
         fragmentShader: document.getElementById("fragmentShader").textContent,
@@ -117,16 +120,15 @@ class ThreeScene extends Component{
         lights: true
     })
 
-    // console.log(material.position);
-
     let spectrum = new THREE.Mesh(spectrumGeometry, material);
     this.sceneRoot.add(spectrum);
     this.allrows.unshift(spectrum);
 
-    const whichToRemove = 10;
+    const whichToRemove = 100;
 
     if(this.allrows.length > whichToRemove) {
       this.sceneRoot.remove(this.allrows[whichToRemove]);
+      this.allrows.pop();
     }
   }
 
@@ -231,12 +233,20 @@ class ThreeScene extends Component{
     //constant for logaritm
     this.rowamount = 128;
     this.c = Math.pow(3157, (1/Math.pow(this.rowamount, 1/2)));
+    this.index = [];
+    for(let i = 0; i < this.rowamount; ++i) {
+      this.index.push( Math.ceil(Math.pow(this.c, Math.pow(i, 1/2)) - 1) );
+    }
+
+    this.now = Date.now();
+    this.delta = Date.now();
+    this.then = Date.now();
+    this.interval = 1000/25;
 
     window.addEventListener('resize', this.resize);
     document.querySelector(".canvas").addEventListener('wheel', this.handleScroll);
     this.height = document.querySelector(".canvas").offsetHeight;
     this.width = document.querySelector(".canvas").offsetWidth;
-    this.framecounter = 0;
 
     this.allrows = [];
 
@@ -250,9 +260,9 @@ class ThreeScene extends Component{
       60, this.width / this.height, 5, 500
     );
 
-    this.camera.position.z = ((5 * this.rowamount)/8);
-    this.camera.position.y = (2 * this.rowamount)/4 -10;
-    this.camera.rotation.x = -(Math.PI * 0.15);
+    this.camera.position.z = 85;
+    this.camera.position.y = 20;
+    this.camera.rotation.x = -(Math.PI * 0.05);
 
     //ADD RENDERER
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -295,26 +305,39 @@ class ThreeScene extends Component{
   }
 
   animate() {
-    if(!this.state.paused) {
-      stats.begin();
+    this.now = Date.now();
+    this.delta = this.now - this.then;
+    var before1, before2, duration1, duration2 = 0;
 
-      // this.camera.position.z = ((3 * this.rowamount)/8) - 6;
-      // this.pointLight.position.z = this.rowamount;
+    if (this.delta > this.interval) {
+      if(!this.state.paused) {
+        stats.begin();
 
-      this.framecounter++;
+        // this.camera.position.z = ((3 * this.rowamount)/8) - 6;
+        // this.pointLight.position.z = this.rowamount;
 
-      if(this.framecounter === 3) {
         this.allrows.forEach((item, i) => {
           item.position.z -= 2;
         });
 
+        before1 = performance.now();
         this.updateFrequencies();
+        duration1 = (performance.now() - before1);
+
+        before2 = performance.now();
         this.createRow();
+        duration2 = (performance.now() - before2);
 
-        this.framecounter = 0;
+        stats.end();
       }
+      this.then = this.now - (this.delta % this.interval);
+    }
 
-      stats.end();
+    if(duration1 > 1) {
+      console.log("Tid att uppdatera frekvenser(ms):", duration1);
+    }
+    if(duration2 > 20) {
+      console.log("Tid att skapa en row(ms):", duration2);
     }
 
     this.renderScene();
