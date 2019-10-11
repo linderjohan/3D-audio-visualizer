@@ -29,6 +29,33 @@ class ThreeScene extends Component{
     this.handleScroll = this.handleScroll.bind(this);
     this.incrementColor = this.incrementColor.bind(this);
     this.interpolate = this.interpolate.bind(this);
+    this.rotateCamera = this.rotateCamera.bind(this);
+    this.translateCamera = this.translateCamera.bind(this);
+    this.handleDrag = this.handleDrag.bind(this);
+  }
+
+  handleDrag(e) {
+    e.preventDefault();
+    console.log(e);
+  }
+
+  rotateCamera(e) {
+
+  }
+
+  translateCamera(e) {
+    console.log(e);
+
+    if(this.clientX !== e.clientX) {
+      this.camera.position.x = 0 + (e.clientX - (this.width/2))/100;
+    }
+
+    if(this.clientY !== e.clientY) {
+      this.camera.position.y = 20 + (-e.clientY + (this.height/2))/100;
+    }
+
+    this.clientX = e.clientX;
+    this.clientY = e.clientY;
   }
 
   handleScroll(e) {
@@ -87,8 +114,10 @@ class ThreeScene extends Component{
         }
 
         let mean = isNaN(sum/amount) ? 1 : sum/amount;
+        let freq = this.interpolate(this.frequencies[i-1], mean, 0.5);
+        let dbFreq = 700*Math.log10(1 + (freq/255));
 
-        this.frequencies.push( this.interpolate(this.frequencies[i-1], mean, 0.5) );
+        this.frequencies.push( dbFreq );
         lastIndex = this.index[i];
       }
     }
@@ -99,8 +128,10 @@ class ThreeScene extends Component{
     let mesh = new THREE.Mesh();
 
     for(let i = 0; i < this.rowamount + 10; ++i) {
-      let cubeGeometry = new THREE.BoxGeometry(2, this.frequencies[i]/2.5, 2);
+      let cubeGeometry = new THREE.BoxGeometry(1, this.frequencies[i]/2.5, 1);
+
       mesh = new THREE.Mesh(cubeGeometry);
+      mesh.castShadow = true;
       mesh.position.x = ( (i) - ((this.rowamount + 10) / 2) ) + 0.5;
       // mesh.position.y = ( this.frequencies[i] / 2 )/10;
 
@@ -129,13 +160,24 @@ class ThreeScene extends Component{
         fragmentShader: document.getElementById("fragmentShader").textContent,
         vertexShader: document.getElementById("vertexShader").textContent,
         lights: true
-    })
+    });
 
     let spectrum = new THREE.Mesh(spectrumGeometry, material);
     this.sceneRoot.add(spectrum);
     this.allrows.unshift(spectrum);
 
-    const whichToRemove = 100;
+    let wireframe = new THREE.EdgesGeometry(spectrumGeometry);
+    material = new THREE.MeshPhongMaterial({color: new THREE.Color( 0, 0, 0, 0.5 ), opacity: 0.2, transparent: true});
+    let line = new THREE.LineSegments(wireframe, material);
+    this.sceneRoot.add(line);
+    this.allwireframes.unshift(line);
+
+    if(this.allwireframes.length > 1) {
+      this.sceneRoot.remove(this.allwireframes[1]);
+      this.allwireframes.pop();
+    }
+
+    const whichToRemove = 50;
 
     if(this.allrows.length > whichToRemove) {
       this.sceneRoot.remove(this.allrows[whichToRemove]);
@@ -256,10 +298,14 @@ class ThreeScene extends Component{
 
     window.addEventListener('resize', this.resize);
     document.querySelector(".canvas").addEventListener('wheel', this.handleScroll);
+    document.querySelector(".canvas").addEventListener('dragstart', this.handleDrag);
+    document.querySelector(".canvas").addEventListener('dragover', this.handleDrag);
+    // document.querySelector(".canvas").addEventListener('mousemove', this.translateCamera);
     this.height = document.querySelector(".canvas").offsetHeight;
     this.width = document.querySelector(".canvas").offsetWidth;
 
     this.allrows = [];
+    this.allwireframes = [];
 
     //ADD SCENE
     this.scene = new THREE.Scene();
@@ -300,6 +346,9 @@ class ThreeScene extends Component{
   componentWillUnmount() {
     window.removeEventListener('resize', this.resize);
     document.querySelector(".canvas").removeEventListener('mousewheel', this.handleScroll);
+    document.querySelector(".canvas").removeEventListener('dragstart', this.handleDrag);
+    // document.querySelector(".canvas").removeEventListener('dragstart', this.handleDrag);
+    // document.querySelector(".canvas").removeEventListener('mousemove', this.translateCamera);
 
     this.stop();
     this.mount.removeChild(this.renderer.domElement);
@@ -324,11 +373,13 @@ class ThreeScene extends Component{
       if(!this.state.paused) {
         stats.begin();
 
-        // this.camera.position.z = ((3 * this.rowamount)/8) - 6;
-        // this.pointLight.position.z = this.rowamount;
+        // this.camera.position.z = 85;
+        // this.camera.position.y = 20;
+        // this.camera.rotation.x = -(Math.PI * 0.05);
 
         this.allrows.forEach((item, i) => {
           item.position.z -= 2;
+          // this.allwireframes[i].position.z -= 2;
         });
 
         before1 = performance.now();
