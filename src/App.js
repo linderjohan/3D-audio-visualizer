@@ -94,7 +94,7 @@ class Index extends Component {
 
 		return(
 			<main className="wrapper">
-				<div className="canvas">
+				<div className="canvas" draggable="true">
 					<ThreeScene analyserNode={this.state.analyserNode} paused={this.state.paused}/>
 				</div>
 				<div className="menu">
