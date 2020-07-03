@@ -1,38 +1,42 @@
 import React, { Component } from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
-import settings from "./settings.json";
 import "./css/index.scss";
 
 import ThreeScene from "./components/ThreeScene";
 import Error from "./components/Error";
+const song = require("./sju-sorger.mp3");
 
 class App extends Component {
 	render() {
 		// let url = window.location.href.replace("http://", "").replace(".vlq.se", "").split("/");
 
-		return(
-			<BrowserRouter>
-				<Switch>
-					<Route exact path={settings.url + "/"} component={Index}/>
-					<Route component={Error} />
-				</Switch>
-			</BrowserRouter>
+		return (
+			<Index />
+			// <BrowserRouter>
+			// 	<Switch>
+			// 		<Route exact path={"/"} component={Index} />
+			// 		<Route component={Error} />
+			// 	</Switch>
+			// </BrowserRouter>
 		);
 	}
 }
 
 //https://stackoverflow.com/questions/44188969/how-to-pass-the-match-when-using-render-in-route-component-from-react-router-v4
 class Index extends Component {
-	constructor(){
+	constructor() {
 		super();
 
 		this.state = {
 			loading: true,
+			created: false,
 			paused: true,
-			displayControls: {display: "none"},
+			displayControls: { display: "" },
 			analyserNode: {}
 		};
+
+		this.audioCtx = new AudioContext();
 
 		this.update = this.update.bind(this);
 		this.imageload = this.imageload.bind(this);
@@ -42,6 +46,7 @@ class Index extends Component {
 	}
 
 	handlePlay(e) {
+		if (this.audioCtx.state !== "running") this.audioCtx.resume();
 		this.setState({ paused: false });
 	}
 
@@ -50,24 +55,14 @@ class Index extends Component {
 	}
 
 	handleUpload(e) {
-		const AudioContext = (window.AudioContext || window.webkitAudioContext);
-		this.setState({ displayControls: {display: "block"} });
 
-	  this.music = document.getElementById('music');
-	  this.music.src = URL.createObjectURL(e.target.files[0]);
-		let audioCtx = new AudioContext();
-		const audioSourceNode = audioCtx.createMediaElementSource(this.music);
+		this.setState({ displayControls: { display: "block" } });
+		// console.log(e.target.files[0]);
 
-		const analyserNode = audioCtx.createAnalyser();
-		analyserNode.fftSize = 8192;
 
-		audioSourceNode.connect(analyserNode);
-		analyserNode.connect(audioCtx.destination);
 
-		this.setState({ analyserNode });
 
-		this.frequencies = new Float32Array(analyserNode.frequencyBinCount);
-		analyserNode.getFloatFrequencyData(this.frequencies);
+
 	}
 
 	// handleMusicEnd(e) {
@@ -75,7 +70,8 @@ class Index extends Component {
 	// }
 
 	update() {
-		this.setState({loading: false});
+		this.setState({ loading: false });
+
 	}
 
 	imageload(e) {
@@ -84,21 +80,52 @@ class Index extends Component {
 	}
 
 	componentDidMount() {
-		this.update();
+		// this.update();
+		const AudioContext = (window.AudioContext || window.webkitAudioContext);
+
+		this.setState({ created: true });
+		this.music = document.getElementById('music');
+
+		// this.music = test;
+		this.music.src = song;
+		// this.music.src = URL.createObjectURL(e.target.files[0]);
+
+		const audioSourceNode = this.audioCtx.createMediaElementSource(this.music);
+
+		const analyserNode = this.audioCtx.createAnalyser();
+		analyserNode.fftSize = 8192;
+
+		audioSourceNode.connect(analyserNode);
+		analyserNode.connect(this.audioCtx.destination);
+		this.setState({ analyserNode });
+
+		this.frequencies = new Float32Array(analyserNode.frequencyBinCount);
+		analyserNode.getFloatFrequencyData(this.frequencies);
+
+
+
+	}
+	componentWillUnmount() {
+		this.setState({ paused: true });
+
+	}
+	componentDidUpdate() {
+
+
 	}
 
 	render() {
-		if(this.state.loading) {
-			return <div id="root-loading"><div className="root-spinner"></div></div>;
-		}
+		// if (this.state.loading) {
+		// 	return <div id="root-loading"><div className="root-spinner"></div></div>;
+		// }
 
-		return(
+		return (
 			<main className="wrapper">
 				<div className="canvas" draggable="true">
-					<ThreeScene analyserNode={this.state.analyserNode} paused={this.state.paused}/>
+					<ThreeScene analyserNode={this.state.analyserNode} paused={this.state.paused} />
 				</div>
 				<div className="menu">
-					<input type="file" id="input" onChange={this.handleUpload}/>
+					{/* <input type="file" id="input" onChange={this.handleUpload} /> */}
 					<audio id="music" controls onPlay={this.handlePlay} onPause={this.handlePause} style={this.state.displayControls}></audio>
 				</div>
 			</main>
