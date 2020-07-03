@@ -1,0 +1,143 @@
+<!doctype html><html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no"><link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,600" rel="stylesheet"><meta name="theme-color" content="#ffffff"><style>*{margin:0}#root-loading{width:100%;height:100%;background-color:#e8e8e8;height:100vh;display:flex;align-items:center;justify-content:center}.root-spinner{background:0 0;font-size:0;width:50px;height:50px;border-radius:100%;padding:0;border:3px solid #fff;border-bottom:3px solid rgba(255,255,255,0);border-left:3px solid rgba(255,255,255,0);animation-name:loading;animation-duration:.7s;animation-iteration-count:infinite}@keyframes loading{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}</style><title>Music 3D Visualizer</title><link href="/static/css/main.7de3564b.chunk.css" rel="stylesheet"></head><body><script id="vertexShader" type="x-shader/x-vertex">varying vec3 vUv;
+      varying vec3 vViewPosition;
+
+      #ifndef FLAT_SHADED
+
+        varying vec3 vNormal;
+
+        #ifdef USE_TANGENT
+
+          varying vec3 vTangent;
+          varying vec3 vBitangent;
+
+        #endif
+
+      #endif
+
+      #include <common>
+      #include <uv_pars_vertex>
+      #include <uv2_pars_vertex>
+      #include <displacementmap_pars_vertex>
+      #include <color_pars_vertex>
+      #include <fog_pars_vertex>
+      #include <morphtarget_pars_vertex>
+      #include <skinning_pars_vertex>
+      #include <shadowmap_pars_vertex>
+      #include <logdepthbuf_pars_vertex>
+      #include <clipping_planes_pars_vertex>
+
+      void main() {
+        vUv = position;
+
+        #include <uv_vertex>
+        #include <uv2_vertex>
+        #include <color_vertex>
+
+        #include <beginnormal_vertex>
+        #include <morphnormal_vertex>
+        #include <skinbase_vertex>
+        #include <skinnormal_vertex>
+        #include <defaultnormal_vertex>
+
+      #ifndef FLAT_SHADED // Normal computed with derivatives when FLAT_SHADED
+
+        vNormal = normalize( transformedNormal );
+
+        #ifdef USE_TANGENT
+
+          vTangent = normalize( transformedTangent );
+          vBitangent = normalize( cross( vNormal, vTangent ) * tangent.w );
+
+        #endif
+
+      #endif
+
+        #include <begin_vertex>
+        #include <morphtarget_vertex>
+        #include <skinning_vertex>
+        #include <displacementmap_vertex>
+        #include <project_vertex>
+        #include <logdepthbuf_vertex>
+        #include <clipping_planes_vertex>
+
+        vViewPosition = - mvPosition.xyz;
+
+        #include <worldpos_vertex>
+        #include <shadowmap_vertex>
+        #include <fog_vertex>
+
+      }</script><script id="fragmentShader" type="x-shader/x-fragment">uniform vec3 colorA;
+      uniform vec3 colorB;
+      varying vec3 vUv;
+
+      uniform vec3 diffuse;
+      uniform vec3 emissive;
+      uniform vec3 specular;
+      uniform float shininess;
+      uniform float opacity;
+
+      #include <common>
+      #include <packing>
+      #include <dithering_pars_fragment>
+      #include <color_pars_fragment>
+      #include <uv_pars_fragment>
+      #include <uv2_pars_fragment>
+      #include <map_pars_fragment>
+      #include <alphamap_pars_fragment>
+      #include <aomap_pars_fragment>
+      #include <lightmap_pars_fragment>
+      #include <emissivemap_pars_fragment>
+      #include <envmap_common_pars_fragment>
+      #include <envmap_pars_fragment>
+      #include <gradientmap_pars_fragment>
+      #include <fog_pars_fragment>
+      #include <bsdfs>
+      #include <lights_pars_begin>
+      #include <lights_phong_pars_fragment>
+      #include <shadowmap_pars_fragment>
+      #include <bumpmap_pars_fragment>
+      #include <normalmap_pars_fragment>
+      #include <specularmap_pars_fragment>
+      #include <logdepthbuf_pars_fragment>
+      #include <clipping_planes_pars_fragment>
+
+      void main() {
+        vec3 diff = vec3(mix(colorA, colorB, (0.03*vUv.y + 0.5)));
+
+      	#include <clipping_planes_fragment>
+
+      	vec4 diffuseColor = vec4( diff, opacity );
+      	ReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );
+      	vec3 totalEmissiveRadiance = emissive;
+
+      	#include <logdepthbuf_fragment>
+      	#include <map_fragment>
+      	#include <color_fragment>
+      	#include <alphamap_fragment>
+      	#include <alphatest_fragment>
+      	#include <specularmap_fragment>
+      	#include <normal_fragment_begin>
+      	#include <normal_fragment_maps>
+      	#include <emissivemap_fragment>
+
+      	// accumulation
+      	#include <lights_phong_fragment>
+      	#include <lights_fragment_begin>
+      	#include <lights_fragment_maps>
+      	#include <lights_fragment_end>
+
+      	// modulation
+      	#include <aomap_fragment>
+
+      	vec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveRadiance;
+
+      	#include <envmap_fragment>
+
+      	gl_FragColor = vec4( outgoingLight, diffuseColor.a );
+
+      	#include <tonemapping_fragment>
+      	#include <encodings_fragment>
+      	#include <fog_fragment>
+      	#include <premultiplied_alpha_fragment>
+      	#include <dithering_fragment>
+      }</script><noscript>You need to enable JavaScript to run this app.</noscript><div id="root"><div id="root-loading"><div class="root-spinner"></div></div></div><script>!function(e){function r(r){for(var n,p,l=r[0],a=r[1],f=r[2],c=0,s=[];c<l.length;c++)p=l[c],Object.prototype.hasOwnProperty.call(o,p)&&o[p]&&s.push(o[p][0]),o[p]=0;for(n in a)Object.prototype.hasOwnProperty.call(a,n)&&(e[n]=a[n]);for(i&&i(r);s.length;)s.shift()();return u.push.apply(u,f||[]),t()}function t(){for(var e,r=0;r<u.length;r++){for(var t=u[r],n=!0,l=1;l<t.length;l++){var a=t[l];0!==o[a]&&(n=!1)}n&&(u.splice(r--,1),e=p(p.s=t[0]))}return e}var n={},o={1:0},u=[];function p(r){if(n[r])return n[r].exports;var t=n[r]={i:r,l:!1,exports:{}};return e[r].call(t.exports,t,t.exports,p),t.l=!0,t.exports}p.m=e,p.c=n,p.d=function(e,r,t){p.o(e,r)||Object.defineProperty(e,r,{enumerable:!0,get:t})},p.r=function(e){"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(e,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(e,"__esModule",{value:!0})},p.t=function(e,r){if(1&r&&(e=p(e)),8&r)return e;if(4&r&&"object"==typeof e&&e&&e.__esModule)return e;var t=Object.create(null);if(p.r(t),Object.defineProperty(t,"default",{enumerable:!0,value:e}),2&r&&"string"!=typeof e)for(var n in e)p.d(t,n,function(r){return e[r]}.bind(null,n));return t},p.n=function(e){var r=e&&e.__esModule?function(){return e.default}:function(){return e};return p.d(r,"a",r),r},p.o=function(e,r){return Object.prototype.hasOwnProperty.call(e,r)},p.p="/";var l=this["webpackJsonpmy-app"]=this["webpackJsonpmy-app"]||[],a=l.push.bind(l);l.push=r,l=l.slice();for(var f=0;f<l.length;f++)r(l[f]);var i=a;t()}([])</script><script src="/static/js/2.fc9074a7.chunk.js"></script><script src="/static/js/main.9fe8b70d.chunk.js"></script></body></html>
