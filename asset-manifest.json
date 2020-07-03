@@ -1,22 +1,23 @@
 {
   "files": {
-    "main.css": "/3D-audio-visualizer/static/css/main.7de3564b.chunk.css",
-    "main.js": "/3D-audio-visualizer/static/js/main.313e552e.chunk.js",
-    "main.js.map": "/3D-audio-visualizer/static/js/main.313e552e.chunk.js.map",
-    "runtime-main.js": "/3D-audio-visualizer/static/js/runtime-main.125ca0de.js",
-    "runtime-main.js.map": "/3D-audio-visualizer/static/js/runtime-main.125ca0de.js.map",
-    "static/js/2.4ce2f504.chunk.js": "/3D-audio-visualizer/static/js/2.4ce2f504.chunk.js",
-    "static/js/2.4ce2f504.chunk.js.map": "/3D-audio-visualizer/static/js/2.4ce2f504.chunk.js.map",
-    "index.html": "/3D-audio-visualizer/index.html",
-    "precache-manifest.7c04a84a3ad3d7306e07414db282f22d.js": "/3D-audio-visualizer/precache-manifest.7c04a84a3ad3d7306e07414db282f22d.js",
-    "service-worker.js": "/3D-audio-visualizer/service-worker.js",
-    "static/css/main.7de3564b.chunk.css.map": "/3D-audio-visualizer/static/css/main.7de3564b.chunk.css.map",
-    "static/js/2.4ce2f504.chunk.js.LICENSE.txt": "/3D-audio-visualizer/static/js/2.4ce2f504.chunk.js.LICENSE.txt"
+    "main.css": "/build/static/css/main.7de3564b.chunk.css",
+    "main.js": "/build/static/js/main.87dab7c9.chunk.js",
+    "main.js.map": "/build/static/js/main.87dab7c9.chunk.js.map",
+    "runtime-main.js": "/build/static/js/runtime-main.12e884dc.js",
+    "runtime-main.js.map": "/build/static/js/runtime-main.12e884dc.js.map",
+    "static/js/2.4ce2f504.chunk.js": "/build/static/js/2.4ce2f504.chunk.js",
+    "static/js/2.4ce2f504.chunk.js.map": "/build/static/js/2.4ce2f504.chunk.js.map",
+    "index.html": "/build/index.html",
+    "precache-manifest.ecbca7f67c752e34053e94ffea10c094.js": "/build/precache-manifest.ecbca7f67c752e34053e94ffea10c094.js",
+    "service-worker.js": "/build/service-worker.js",
+    "static/css/main.7de3564b.chunk.css.map": "/build/static/css/main.7de3564b.chunk.css.map",
+    "static/js/2.4ce2f504.chunk.js.LICENSE.txt": "/build/static/js/2.4ce2f504.chunk.js.LICENSE.txt",
+    "static/media/sju-sorger.mp3": "/build/static/media/sju-sorger.978ee945.mp3"
   },
   "entrypoints": [
-    "static/js/runtime-main.125ca0de.js",
+    "static/js/runtime-main.12e884dc.js",
     "static/js/2.4ce2f504.chunk.js",
     "static/css/main.7de3564b.chunk.css",
-    "static/js/main.313e552e.chunk.js"
+    "static/js/main.87dab7c9.chunk.js"
   ]
 }
